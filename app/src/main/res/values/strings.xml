@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name" type="id">Posletics</string>
+    <string name="loginButtonText">Login</string>
+    <string name="UsernameText">UserName</string>
+    <string name="passwordHint">password</string>
+    <string name="UsernameHint">Email Address</string>
+
+    <string name="Emergencycontact">Emergencycontact</string>
+    <string name="Team">Team</string>
+    <string name="Friends">Friends</string>
+    <string name="MyPos">MyPos</string>
+    <string name="Setting">Setting</string>
+    <string name="Challenges">Challenges</string>
+    <string name="Communicate">Communicate</string>
+    <string name="Share">Share</string>
+    <string name="Upload">Upload</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="google_maps_API_key">AIzaSyCi-INq5LUJQ75WRIpqA3eSe-1m5qogjiI</string>
+</resources>

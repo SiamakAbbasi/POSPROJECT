@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+tools:showIn="navigation_view" >
+<group  android:checkableBehavior="single">
+    <item   android:id="@+id/nav_mypos" android:icon="@drawable/ic_mypos" android:title="@string/MyPos"/>
+    <item   android:id="@+id/nav_challenges" android:icon="@drawable/ic_rate" android:title="@string/Challenges"/>
+    <item   android:id="@+id/nav_friends" android:icon="@drawable/ic_friends" android:title="@string/Friends"/>
+    <item   android:id="@+id/nav_teams" android:icon="@drawable/ic_mypos" android:title="@string/Team"/>
+    <item   android:id="@+id/nav_emergencycontact" android:icon="@drawable/ic_callcontact" android:title="@string/Emergencycontact"/>
+    <item   android:id="@+id/nav_Setting" android:icon="@drawable/ic_setting" android:title="@string/Setting"/>
+
+</group>
+    <item   android:title="@string/Communicate">
+
+        <menu>
+            <item android:title="@string/Share" android:icon="@drawable/ic_share" android:id="@+id/nav_share"></item>
+            <item android:title="@string/Upload" android:icon="@drawable/ic_upload" android:id="@+id/nav_upload"></item>
+        </menu>
+    </item>
+</menu>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="176dp"
+              android:background="@color/colorButton"
+              android:gravity="bottom"
+              android:theme="@style/ThemeOverlay.AppCompat.Dark"
+              android:padding="16dp">
+    <ImageView android:id="@+id/header_imgprofile"
+               android:layout_width="100dp"
+               android:layout_height="wrap_content"
+               android:src="@drawable/avatar"
+               android:layout_alignParentRight="true"
+    />
+    <TextView android:drawableLeft="@drawable/ic_action_user" android:textColor="@color/colorWhite"
+              android:layout_width="wrap_content" android:id="@+id/header_name"
+              android:layout_height="wrap_content"
+              android:text="Siamak Abbasi" android:drawablePadding="5dp"
+              android:layout_alignParentLeft="true"
+              android:layout_alignTop="@+id/header_imgprofile"
+              android:textSize="20sp" android:textStyle="bold"
+              android:layout_marginTop="10dp" android:paddingLeft="5dp"
+              android:layout_gravity="left" />
+    <TextView android:drawableLeft="@drawable/ic_mail_white" android:layout_width="wrap_content"
+              android:textColor="@color/colorWhite" android:layout_height="wrap_content"
+              android:layout_marginTop="5dp"  android:paddingLeft="5dp" android:drawablePadding="5dp"
+              android:textSize="15sp"
+              android:text="Siamak.A@rub.de"  android:id="@+id/header_mail" android:layout_below="@+id/header_name"/>
+    <TextView android:drawableLeft="@drawable/ic_star_white" android:layout_width="wrap_content"
+              android:textColor="@color/colorWhite" android:layout_height="wrap_content" android:text="Rate"
+              android:layout_marginTop="5dp" android:drawablePadding="5dp"
+              android:textSize="15sp" android:paddingLeft="5dp"
+              android:gravity="bottom"  android:id="@+id/header_rate" android:layout_below="@+id/header_mail"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+              android:textColor="@color/colorOrange" android:layout_marginLeft="20dp" android:text="27"
+              android:textSize="25sp"  android:paddingLeft="5dp" android:drawablePadding="5dp"
+              android:textFontWeight="15" android:layout_below="@+id/header_rate"
+              android:id="@+id/header_ratenum"/>
+</RelativeLayout>
