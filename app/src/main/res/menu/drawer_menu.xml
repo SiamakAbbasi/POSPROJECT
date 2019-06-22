@@ -3,6 +3,7 @@
       xmlns:tools="http://schemas.android.com/tools"
 tools:showIn="navigation_view" >
 <group  android:checkableBehavior="single">
+    <item   android:id="@+id/nav_overview" android:icon="@drawable/ic_search_black_24dp" android:title="@string/OverView"/>
     <item   android:id="@+id/nav_mypos" android:icon="@drawable/ic_mypos" android:title="@string/MyPos"/>
     <item   android:id="@+id/nav_challenges" android:icon="@drawable/ic_rate" android:title="@string/Challenges"/>
     <item   android:id="@+id/nav_friends" android:icon="@drawable/ic_friends" android:title="@string/Friends"/>

@@ -8,6 +8,7 @@ import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
@@ -25,8 +26,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.navigation.NavigationView
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
     private var toolbar: Toolbar? = null
     private val ERROR_DIALOG_REQUEST = 9001
@@ -35,6 +37,25 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val myIntent = Intent(baseContext, MainActivity::class.java)
         startActivity(myIntent)
     }
+
+    override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
+
+        when (menuItem.getItemId()) {
+            R.id.nav_mypos -> {
+                supportFragmentManager.beginTransaction().replace(
+                    R.id.fragment_container,
+                    MyPoseFragment()
+                ).commit()
+            }
+            R.id.nav_overview -> {
+                val myIntent = Intent(baseContext, MapActivity::class.java)
+                startActivity(myIntent)
+            }
+        }
+
+        return true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
@@ -42,12 +63,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 //        setSupportActionBar(toolbar);
 
         drawer = findViewById(R.id.drawer_layout)
+
         var toggle = ActionBarDrawerToggle(
             this, drawer, toolbar,
             R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawer.addDrawerListener(toggle)
         toggle.syncState()
+   val navigationView:NavigationView = findViewById(R.id.navigationView)
+       navigationView.setNavigationItemSelectedListener(this)
+
         initilizeMap()
     }
 

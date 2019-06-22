@@ -18,18 +18,14 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.navigation.NavigationView;
 
 public class MapAccessActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-    @Override
-    public void onInfoWindowClick(Marker marker) {
 
-    }
-});
     }
 
     private static final String TAG = "MapAccessActivity";
@@ -51,7 +47,7 @@ getLocationPermission();
     private void initMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(MapAccessActivity.this);
-
+        NavigationView navigationview = (NavigationView) findViewById(R.id.nav_mypos);
     }
 
     @Override
