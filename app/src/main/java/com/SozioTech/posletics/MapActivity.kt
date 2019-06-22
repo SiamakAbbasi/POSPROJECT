@@ -23,6 +23,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -84,6 +85,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val lg = LatLng(51.441318653573965, 7.264961193145723)
         moveCamera(lg, 16F)
         Log.d("SiamakLOg:", "onMapReady")
+        mMap?.setOnInfoWindowClickListener(GoogleMap.OnInfoWindowClickListener {
+            val myIntent = Intent(baseContext, MainActivity::class.java)
+            startActivity(myIntent)
+        })
+//        mMap?.setOnMarkerClickListener(GoogleMap.OnMarkerClickListener {
+//            val myIntent = Intent(baseContext, MainActivity::class.java)
+//            startActivity(myIntent)
+//            false })
     }
 
 
@@ -167,8 +176,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 BitmapDescriptorFactory.defaultMarker(
                     BitmapDescriptorFactory.HUE_YELLOW
                 )
-            ).title("MyPos")
-        )
+            ).snippet("Thats my POS").title("MyPos")
+        )?.showInfoWindow()
         mMap?.addMarker(MarkerOptions().position(lg1))
         mMap?.addMarker(MarkerOptions().position(lg2))
         mMap?.addMarker(MarkerOptions().position(lg3))
@@ -178,7 +187,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             BitmapDescriptorFactory.defaultMarker(
                 BitmapDescriptorFactory.HUE_YELLOW
             )
-        ).title("MyPos"))
+        ).snippet("Thats my POS").title("MyPos"))?.showInfoWindow()
         mMap?.addMarker(MarkerOptions().position(lg7))
         mMap?.addMarker(MarkerOptions().position(lg8))
         mMap?.addMarker(MarkerOptions().position(lg9))
@@ -186,7 +195,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             BitmapDescriptorFactory.defaultMarker(
                 BitmapDescriptorFactory.HUE_YELLOW
             )
-        ).title("MyPos"))
+        ).snippet("Thats my POS").title("MyPos"))?.showInfoWindow()
         mMap?.addMarker(MarkerOptions().position(lg11))
         mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latlang, zoom))
 

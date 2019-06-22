@@ -16,6 +16,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapAccessActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -23,6 +24,12 @@ public class MapAccessActivity extends AppCompatActivity implements OnMapReadyCa
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+    }
+});
     }
 
     private static final String TAG = "MapAccessActivity";
