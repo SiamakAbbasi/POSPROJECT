@@ -33,6 +33,7 @@ public class MapAccessActivity extends AppCompatActivity implements OnMapReadyCa
     private Boolean mLocationPermissionGranted = false;
     private GoogleMap mMap;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

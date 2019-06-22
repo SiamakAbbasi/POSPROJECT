@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name" type="id">Posletics</string>
     <string name="loginButtonText">Login</string>
+    <string name="btnGoText">GO</string>
     <string name="UsernameText">UserName</string>
     <string name="passwordHint">password</string>
     <string name="UsernameHint">Email Address</string>
