@@ -203,10 +203,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
                 )
             ).snippet("Thats my POS").title("MyPos")
         )?.showInfoWindow()
-        mMap?.addMarker(MarkerOptions().position(lg1))
+     mMap?.addMarker(MarkerOptions().position(lg1))
         mMap?.addMarker(MarkerOptions().position(lg2))
         mMap?.addMarker(MarkerOptions().position(lg3))
-        mMap?.addMarker(MarkerOptions().position(lg4))
+
         mMap?.addMarker(MarkerOptions().position(lg5))
         mMap?.addMarker(MarkerOptions().position(lg6).icon(
             BitmapDescriptorFactory.defaultMarker(

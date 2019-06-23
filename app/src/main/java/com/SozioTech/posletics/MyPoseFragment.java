@@ -74,7 +74,7 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
         LatLng lg11 = new LatLng(51.44432797329013, 7.27421229916979);
         mMap.addMarker(new MarkerOptions().position(lg8).icon(
                 BitmapDescriptorFactory.defaultMarker(
-                        BitmapDescriptorFactory.HUE_RED
+                        BitmapDescriptorFactory.HUE_VIOLET
                 )
                 ).snippet("there is no enough verification").title("UnVerified")
         );
