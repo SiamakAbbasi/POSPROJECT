@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".EditPosActivity">
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/Title"
+android:textSize="30sp" android:textColor="@color/colorDarkGray" android:text="SelectedPos: AwsomePos" android:layout_alignParentTop="true"
+android:layout_margin="10dp"
+/>
+    <ListView android:id="@+id/HashtagListView" android:layout_marginTop="10dp" android:layout_below="@id/Title"
+              android:layout_width="match_parent" android:layout_height="wrap_content">
+
+    </ListView>
+    <com.google.android.gms.maps.MapView android:layout_width="match_parent"
+                                         android:layout_height="250dp"
+                                         android:id="@+id/mapMyPosShow" android:layout_alignParentBottom="true"
+
+
+    />
+
+</RelativeLayout>

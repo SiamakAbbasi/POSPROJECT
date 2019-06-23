@@ -5,6 +5,7 @@
     <string name="UsernameText">UserName</string>
     <string name="passwordHint">password</string>
     <string name="UsernameHint">Email Address</string>
+    <string name="AwsomePos">AwsomePos</string>
 
     <string name="Emergencycontact">Emergencycontact</string>
     <string name="Team">Team</string>

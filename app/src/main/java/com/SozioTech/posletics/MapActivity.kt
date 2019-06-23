@@ -111,7 +111,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
         moveCamera(lg, 16F)
         Log.d("SiamakLOg:", "onMapReady")
         mMap?.setOnInfoWindowClickListener(GoogleMap.OnInfoWindowClickListener {
-            val myIntent = Intent(baseContext, MainActivity::class.java)
+            val myIntent = Intent(baseContext, EditPosActivity::class.java)
             startActivity(myIntent)
         })
 //        mMap?.setOnMarkerClickListener(GoogleMap.OnMarkerClickListener {
@@ -199,7 +199,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
         mMap?.addMarker(
             MarkerOptions().position(latlang).icon(
                 BitmapDescriptorFactory.defaultMarker(
-                    BitmapDescriptorFactory.HUE_YELLOW
+                    BitmapDescriptorFactory.HUE_GREEN
                 )
             ).snippet("Thats my POS").title("MyPos")
         )?.showInfoWindow()
@@ -212,7 +212,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
             BitmapDescriptorFactory.defaultMarker(
                 BitmapDescriptorFactory.HUE_YELLOW
             )
-        ).snippet("Thats my POS").title("MyPos"))?.showInfoWindow()
+        ).snippet("Thats my POS").title("AwsomePos"))?.showInfoWindow()
         mMap?.addMarker(MarkerOptions().position(lg7))
         mMap?.addMarker(MarkerOptions().position(lg8))
         mMap?.addMarker(MarkerOptions().position(lg9))
