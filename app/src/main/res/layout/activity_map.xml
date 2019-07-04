@@ -27,26 +27,8 @@
                   tools:context=".MapAccessActivity"
                   android:name="com.google.android.gms.maps.SupportMapFragment"
         />
-        <RelativeLayout android:layout_width="match_parent" android:layout_height="50dp"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginRight="10dp"
-                        android:layout_alignParentTop="true"
-                        android:elevation="10dp"
-                        android:background="@color/colorWhite"
-                        android:layout_marginTop="70dp" android:theme="@style/AppTheme">
-            <ImageView android:layout_width="15dp" android:layout_height="15dp"
-                       android:id="@+id/ic_magnify" android:src="@drawable/ic_search_black_24dp"
-                       android:layout_centerVertical="true" android:layout_marginLeft="10dp"
-            />
-            <EditText android:layout_width="match_parent" android:layout_height="match_parent"
-                      android:layout_toRightOf="@id/ic_magnify"
-                      android:layout_centerVertical="true"
-                      android:textSize="15sp" android:textColor="@color/colorDarkGray"
-                      android:id="@+id/txtSearch"
-                      android:hint="Searching for Pos"
-            />
-        </RelativeLayout>
-        <RelativeLayout android:layout_width="50dp" android:layout_height="50dp"
+
+        <RelativeLayout android:layout_width="55dp" android:layout_height="100dp"
                         android:layout_marginLeft="10dp"
                         android:layout_marginRight="10dp"
                         android:elevation="10dp"
@@ -56,28 +38,28 @@
                         android:layout_marginTop="10dp"
                         android:layout_marginBottom="100dp">
 
-          <!--  <ImageView android:layout_width="50dp" android:layout_height="50dp"
-                           android:id="@+id/ic_myLocation" android:src="@drawable/ic_my_location_"
-                           android:layout_centerVertical="true"
-                           android:layout_marginLeft="30dp"
-                           android:layout_marginRight="30dp"
-                           android:layout_marginBottom="5dp"
-                           android:layout_marginTop="5dp"
-                           android:layout_alignParentTop="true"
-                           android:layout_centerHorizontal="true"
 
-        />-->
+
+
             <Button
                     android:id="@+id/btnUsername"
                     android:text="@string/btnGoText"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginRight="5dp"
                     android:layout_centerHorizontal="true"
                     android:background="@color/colorButton"
                     android:textColor="@color/colorWhite"
                     android:onClick="onButtonClick"
                     android:textSize="30dp"
             />
+            <ImageButton
+                    android:id="@+id/deviceLocation"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+
+                    android:background="@drawable/ic_my_location_"
+                    android:layout_below="@id/btnUsername"/>
         </RelativeLayout>
     </RelativeLayout>
 <LinearLayout android:layout_width="match_parent" android:orientation="vertical"
@@ -87,8 +69,21 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPrimary"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark" />
+            android:background="@color/colorButton"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark" >
+
+        <ImageView android:layout_width="15dp" android:layout_height="15dp"
+                   android:id="@+id/ic_magnify" android:src="@drawable/ic_search_black_24dp"
+                   android:layout_centerVertical="true" android:layout_marginLeft="10dp"
+        />
+        <EditText android:layout_width="match_parent" android:layout_height="match_parent"
+                  android:layout_toRightOf="@id/ic_magnify"
+                  android:layout_centerVertical="true"
+                  android:textSize="15sp" android:textColor="@color/colorDarkGray"
+                  android:id="@+id/txtSearch"
+                  android:hint="Searching for Pos"
+        />
+    </androidx.appcompat.widget.Toolbar>
 
     <FrameLayout android:id="@+id/fragment_container"
             android:layout_width="match_parent"

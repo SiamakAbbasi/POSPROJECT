@@ -5,6 +5,7 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorDarkGray">#343638</color>
     <color name="colorWhite">#FFFF</color>
+    <color name="colorBlack">#0000</color>
     <color name="colorBgEditTextLogin">#ea4163</color>
     <color name="colorButton">#4286f4</color>
     <color name="colorOrange">#ffcc00</color>

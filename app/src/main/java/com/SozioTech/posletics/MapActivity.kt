@@ -4,12 +4,16 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Criteria
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageButton
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
@@ -28,11 +32,12 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.navigation.NavigationView
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnNavigationItemSelectedListener {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawer: DrawerLayout
     private var toolbar: Toolbar? = null
     private val ERROR_DIALOG_REQUEST = 9001
     private val TAG = "MainActivity"
+    private var locationManager: LocationManager? = null
     fun onButtonClick(v: View) {
         val myIntent = Intent(baseContext, MainActivity::class.java)
         startActivity(myIntent)
@@ -40,7 +45,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
 
-        when (menuItem.getItemId()) {
+        when (menuItem.itemId) {
             R.id.nav_mypos -> {
                 supportFragmentManager.beginTransaction().replace(
                     R.id.fragment_container,
@@ -59,8 +64,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
-        toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar)
 //        setSupportActionBar(toolbar);
+        toolbar?.title = "Posletic"
+
 
         drawer = findViewById(R.id.drawer_layout)
 
@@ -70,10 +77,36 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
         )
         drawer.addDrawerListener(toggle)
         toggle.syncState()
-   val navigationView:NavigationView = findViewById(R.id.navigationView)
-       navigationView.setNavigationItemSelectedListener(this)
+        val navigationView: NavigationView = findViewById(R.id.navigationView)
+        navigationView.setNavigationItemSelectedListener(this)
 
         initilizeMap()
+        val imgDeviceLocation: ImageButton = findViewById(R.id.deviceLocation)
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
+        imgDeviceLocation?.setOnClickListener {
+            // Create persistent LocationManager reference
+            try {
+                // Request location updates
+                locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, locationListener);
+            } catch (ex: SecurityException) {
+                Log.d("myTag", "Security Exception, no location available");
+            }
+
+        }
+
+    }
+
+    private val locationListener: LocationListener = object : LocationListener {
+        override fun onLocationChanged(location: Location) {
+            val lg1 = LatLng(location.latitude, location.longitude)
+            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(lg1, 15F))
+
+//            thetext.setText("" + location.longitude + ":" + location.latitude);
+        }
+
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+        override fun onProviderEnabled(provider: String) {}
+        override fun onProviderDisabled(provider: String) {}
     }
 
     override fun onBackPressed() {
@@ -103,21 +136,31 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
         //       val intent = Intent(this@MapActivity, MapAccessActivity::class.java)
         //      startActivity(intent)
     }
+
     // Get Ferom MapAccessActivity
+    private fun initMap() {
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment!!.getMapAsync(this@MapActivity)
+    }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         val lg = LatLng(51.441318653573965, 7.264961193145723)
+        if (ContextCompat.checkSelfPermission(
+                this.applicationContext,
+                COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        mMap?.isMyLocationEnabled = true
         moveCamera(lg, 16F)
         Log.d("SiamakLOg:", "onMapReady")
         mMap?.setOnInfoWindowClickListener(GoogleMap.OnInfoWindowClickListener {
             val myIntent = Intent(baseContext, EditPosActivity::class.java)
             startActivity(myIntent)
         })
-//        mMap?.setOnMarkerClickListener(GoogleMap.OnMarkerClickListener {
-//            val myIntent = Intent(baseContext, MainActivity::class.java)
-//            startActivity(myIntent)
-//            false })
+
     }
 
 
@@ -167,7 +210,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
             ) {
                 mLocationPermissionGranted = true
                 initMap()
-
+                mMap?.isMyLocationEnabled = true
             } else {
                 ActivityCompat.requestPermissions(this, permissions, LOCATION_PERMISSION_REQUEST_CODE)
             }
@@ -177,14 +220,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
         }
     }
 
-    private fun initMap() {
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment!!.getMapAsync(this@MapActivity)
-
-    }
 
     private fun moveCamera(latlang: LatLng, zoom: Float) {
         Log.d("SiamakLog", "zoom")
+
         val lg1 = LatLng(51.44191383305735, 7.26578731352237)
         val lg2 = LatLng(51.44191383305731, 7.26578731352231)
         val lg3 = LatLng(51.441412277826984, 7.265814135612459)
@@ -197,33 +236,41 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback , NavigationView.OnN
         val lg10 = LatLng(51.44462220090753, 7.27395480710436)
         val lg11 = LatLng(51.44432797329013, 7.27421229916979)
         mMap?.addMarker(
-            MarkerOptions().position(latlang).icon(
-                BitmapDescriptorFactory.defaultMarker(
-                    BitmapDescriptorFactory.HUE_GREEN
-                )
-            ).snippet("Thats my POS").title("MyPos")
+            MarkerOptions().position(latlang).snippet("#Sample").title("MyPos")
         )?.showInfoWindow()
-     mMap?.addMarker(MarkerOptions().position(lg1))
-        mMap?.addMarker(MarkerOptions().position(lg2))
-        mMap?.addMarker(MarkerOptions().position(lg3))
+        mMap?.addMarker(
+            MarkerOptions().position(lg1).snippet("#Sample1").title("Pos1")
+        )?.showInfoWindow()
+        mMap?.addMarker(
+            MarkerOptions().position(lg2).snippet("#Sample2").title("Pos2")
+        )?.showInfoWindow()
+        mMap?.addMarker(
+            MarkerOptions().position(lg3).snippet("#Sample3").title("Pos3")
+        )?.showInfoWindow()
 
-        mMap?.addMarker(MarkerOptions().position(lg5))
-        mMap?.addMarker(MarkerOptions().position(lg6).icon(
-            BitmapDescriptorFactory.defaultMarker(
-                BitmapDescriptorFactory.HUE_YELLOW
-            )
-        ).snippet("Thats my POS").title("AwsomePos"))?.showInfoWindow()
-        mMap?.addMarker(MarkerOptions().position(lg7))
-        mMap?.addMarker(MarkerOptions().position(lg8))
-        mMap?.addMarker(MarkerOptions().position(lg9))
-        mMap?.addMarker(MarkerOptions().position(lg10).icon(
-            BitmapDescriptorFactory.defaultMarker(
-                BitmapDescriptorFactory.HUE_YELLOW
-            )
-        ).snippet("Thats my POS").title("MyPos"))?.showInfoWindow()
-        mMap?.addMarker(MarkerOptions().position(lg11))
+        mMap?.addMarker(
+            MarkerOptions().position(lg5).snippet("#Sample4").title("MyPos4")
+        )?.showInfoWindow()
+        mMap?.addMarker(
+            MarkerOptions().position(lg6).snippet("#Sample5").title("MyPos5")
+        )?.showInfoWindow()
+        mMap?.addMarker(
+            MarkerOptions().position(lg7).snippet("#Sample6").title("MyPos6")
+        )?.showInfoWindow()
+        mMap?.addMarker(
+            MarkerOptions().position(lg8).snippet("#Sample7").title("MyPos7")
+        )?.showInfoWindow()
+        mMap?.addMarker(
+            MarkerOptions().position(lg9).snippet("#Sample7").title("MyPos7")
+        )?.showInfoWindow()
+        mMap?.addMarker(
+            MarkerOptions().position(lg10).snippet("#Sample8").title("MyPos8")
+        )?.showInfoWindow()
+        mMap?.addMarker(
+            MarkerOptions().position(lg11).snippet("#Sample9").title("MyPos9")
+        )?.showInfoWindow()
         mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latlang, zoom))
 
     }
-    }
+}
 
