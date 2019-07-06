@@ -1,6 +1,7 @@
 package com.SozioTech.posletics;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.gms.maps.SupportMapFragment;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
 
 
 public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
@@ -28,6 +37,9 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
     MapView mMapView;
     View mView;
+    public String dataproperties = "";
+    @NotNull
+    public ArrayList ListOfPosModel;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -45,8 +57,11 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
         mMap = googleMap;
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         LatLng lg = new LatLng(51.441318653573965, 7.264961193145723);
-        moveCamera(lg, 16F);
-
+        //  moveCamera(lg, 16F);
+        dataproperties = "";
+        ListOfPosModel = new ArrayList<JsonDataModelPos>();
+        JsonParser jsonclass = new JsonParser();
+        jsonclass.execute();
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
@@ -57,7 +72,6 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
 
         });
     }
-
 
 
     private void moveCamera(LatLng latlang, Float zoom) {
@@ -102,5 +116,85 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
         ).snippet("thats veryfied but not enough").title("Unpublished"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlang, zoom));
 
+    }
+
+    private class JsonParser extends AsyncTask<Void, Void, JSONArray> {
+
+        @Override
+        protected JSONArray doInBackground(Void... voids) {
+            HttpHandler sh = new HttpHandler();
+            // Making a request to url and getting response
+            String url = "https://posletics.herokuapp.com/api/pos";
+            String jsonStr = sh.makeServiceCall(url);
+            dataproperties = jsonStr;
+            if (jsonStr != null) {
+                try {
+                    // Getting JSON Array node
+                    JSONArray jsonArray = new JSONArray(dataproperties);
+                    return jsonArray;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(JSONArray result) {
+            super.onPostExecute(result);
+            Integer itemcount = result.length();
+            JSONArray hashtagArr;
+            Double lat = 12.192839;
+            Double lng = 12.123123;
+            for (int i = 0; i < itemcount; i++) {
+                JsonDataModelPos jsonDataModelPos = new JsonDataModelPos();
+                try {
+                    JSONObject jsonObject = (JSONObject) result.get(i);
+                    jsonDataModelPos.id = (Integer) jsonObject.get("id");
+                    jsonDataModelPos.user_id = (Integer) jsonObject.get("user_id");
+                    jsonDataModelPos.upvotes = (Integer) jsonObject.get("upvotes");
+                    jsonDataModelPos.lat = (String) jsonObject.get("lat");
+                    jsonDataModelPos.lng = (String) jsonObject.get("lng");
+                    jsonDataModelPos.hashtags = (JSONArray) jsonObject.get("hashtags");
+                    if (jsonDataModelPos.user_id == 4) {
+                        String name = "PosLetic";
+                        if (jsonDataModelPos.hashtags != null && jsonDataModelPos.hashtags.length() > 0) {
+                            name = (String) ((JSONObject) jsonDataModelPos.hashtags.get(0)).get("name");
+                        }
+                        lat = Double.parseDouble(jsonDataModelPos.lat);
+                        lng = Double.parseDouble(jsonDataModelPos.lng);
+                        if (jsonDataModelPos.upvotes > 1 && jsonDataModelPos.upvotes < 4) {
+                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(name).icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_YELLOW
+                                    )
+                            ));
+                        }
+                        if (jsonDataModelPos.upvotes < 1) {
+                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(name).icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_VIOLET
+                                    )
+                            ));
+                        }
+                        if (jsonDataModelPos.upvotes > 3) {
+                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(name).icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_GREEN
+                                    )
+                            ));
+                        }
+                    }
+//                            mMap.addMarker(
+//                                    new MarkerOptions().position(new LatLng(lat, lng))
+//
+//                            );
+                    ListOfPosModel.add(jsonDataModelPos);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 16F));
+        }
     }
 }
