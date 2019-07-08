@@ -46,7 +46,18 @@ import java.net.URL
 import java.util.ArrayList
 import java.util.HashMap
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener {
+class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener,
+    GoogleMap.OnMarkerClickListener {
+    override fun onMarkerClick(marker: Marker?): Boolean {
+        val myIntent = Intent(baseContext, EditPosActivity::class.java)
+        myIntent.putExtra(Constants.MYPOSACTIVITY, Constants.YESORNO.NO.ordinal)
+        myIntent.putExtra(Constants.TAGID, marker?.getTag() as Int)
+
+        startActivity(myIntent)//To change body of created functions use File | Settings | File Templates.
+        return false
+    }
+
+
     private lateinit var drawer: DrawerLayout
     private var toolbar: Toolbar? = null
     private val ERROR_DIALOG_REQUEST = 9001
@@ -96,7 +107,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         toggle.syncState()
         val navigationView: NavigationView = findViewById(R.id.navigationView)
         navigationView.setNavigationItemSelectedListener(this)
-
         initilizeMap()
         val imgDeviceLocation: ImageButton = findViewById(R.id.deviceLocation)
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
@@ -193,10 +203,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         mMap?.isMyLocationEnabled = true
         moveCamera(lg, 16F)
         Log.d("SiamakLOg:", "onMapReady")
-        mMap?.setOnInfoWindowClickListener(GoogleMap.OnInfoWindowClickListener {
-            val myIntent = Intent(baseContext, EditPosActivity::class.java)
-            startActivity(myIntent)
-        })
+
+        mMap?.setOnMarkerClickListener( this)
 
     }
 
@@ -349,11 +357,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
                 if (jsonDataModelPos.hashtags != null && jsonDataModelPos.hashtags.length() > 0) {
                     name = (jsonDataModelPos.hashtags.get(0) as JSONObject).get("name") as String
                 }
+
                 mMap?.addMarker(
                     MarkerOptions().position(LatLng(lat, lng))
                         .title(name)
-                )
+                )?.tag=jsonDataModelPos.id
                 ListOfPosModel.add(jsonDataModelPos)
+//
 
             }
             mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 15F))

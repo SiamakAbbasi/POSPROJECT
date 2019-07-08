@@ -26,7 +26,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 
-public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
+public class MyPoseFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -62,15 +62,16 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
         ListOfPosModel = new ArrayList<JsonDataModelPos>();
         JsonParser jsonclass = new JsonParser();
         jsonclass.execute();
-        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-            @Override
-            public void onInfoWindowClick(Marker marker) {
-                Intent myIntent = new Intent(getContext(), EditPosActivity.class);
-                startActivity(myIntent);
-            }
+        mMap.setOnMarkerClickListener(this);
+//        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+//            @Override
+//            public void onInfoWindowClick(Marker marker) {
+//
+//            }
+//
+//
+//        });
 
-
-        });
     }
 
 
@@ -116,6 +117,15 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
         ).snippet("thats veryfied but not enough").title("Unpublished"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlang, zoom));
 
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Intent myIntent = new Intent(getContext(), EditPosActivity.class);
+        myIntent.putExtra(Constants.MYPOSACTIVITY,Constants.YESORNO.YES.ordinal());
+        myIntent.putExtra(Constants.TAGID,(int) marker.getTag());
+        startActivity(myIntent);
+        return false;
     }
 
     private class JsonParser extends AsyncTask<Void, Void, JSONArray> {
@@ -168,21 +178,21 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback {
                                     BitmapDescriptorFactory.defaultMarker(
                                             BitmapDescriptorFactory.HUE_YELLOW
                                     )
-                            ));
+                            )).setTag(jsonDataModelPos.id);
                         }
                         if (jsonDataModelPos.upvotes < 1) {
                             mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(name).icon(
                                     BitmapDescriptorFactory.defaultMarker(
                                             BitmapDescriptorFactory.HUE_VIOLET
                                     )
-                            ));
+                            )).setTag(jsonDataModelPos.id);
                         }
                         if (jsonDataModelPos.upvotes > 3) {
                             mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(name).icon(
                                     BitmapDescriptorFactory.defaultMarker(
                                             BitmapDescriptorFactory.HUE_GREEN
                                     )
-                            ));
+                            )).setTag(jsonDataModelPos.id);
                         }
                     }
 //                            mMap.addMarker(
