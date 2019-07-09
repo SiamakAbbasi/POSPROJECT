@@ -27,9 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import org.json.JSONArray
@@ -47,7 +45,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         val myIntent = Intent(baseContext, EditPosActivity::class.java)
         myIntent.putExtra(Constants.MYPOSACTIVITY, Constants.YESORNO.NO.ordinal)
         myIntent.putExtra(Constants.TAGID, marker?.getTag() as Int)
-
         startActivity(myIntent)//To change body of created functions use File | Settings | File Templates.
         return false
     }
@@ -63,6 +60,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
     private lateinit var context: Context;
     val arrayMarkersInfo = ArrayList<String>()
     val arrayMarkers = ArrayList<Marker>()
+    val selectedMarkers = ArrayList<Int>()
     lateinit var txtSearchControl: AutoCompleteTextView
     fun onButtonClick(v: View) {
         val myIntent = Intent(baseContext, MainActivity::class.java)
@@ -93,13 +91,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         context = this
         this.txtSearchControl = findViewById(R.id.txtSearch)
         txtSearchControl.setOnItemClickListener(AdapterView.OnItemClickListener { adapterView, view, i, l ->
-            val selectedItem = adapterView.getItemAtPosition(i).toString()
-
-
             var itemcount: Int = ListOfPosModel?.size!!
             var lat: Double = 12.192839
             var lng: Double = 12.123123
             var jsonArray = JSONArray()
+            val selectedItem = adapterView.getItemAtPosition(i).toString()
             ListOfPosModel.forEach {
 
                 if (it.hashtags != null && it.hashtags.length() > 0) {
@@ -114,7 +110,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
                             lng = it.lng.toDouble()
                             mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 18F))
                             arrayMarkers.forEach {
-                                if (it.tag ==iditem){
+                                if (it.tag == iditem) {
                                     it.showInfoWindow()
                                 }
                             }
@@ -230,11 +226,56 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         ) {
             return
         }
+
         mMap?.isMyLocationEnabled = true
         Log.d("SiamakLOg:", "onMapReady")
 
         mMap?.setOnMarkerClickListener(this)
+        mMap?.setOnMapLongClickListener(GoogleMap.OnMapLongClickListener { latLng ->
+            ListOfPosModel.forEach {
+                var lat: Double = latLng.latitude;
+                var lng: Double = latLng.longitude;
+                val results = FloatArray(1)
+                Location.distanceBetween(lat, lng, it.lat.toDouble(), it.lng.toDouble(), results)
+                val distanceInMeters = results[0]
+                val isWithin200m = distanceInMeters < 200
+                if (isWithin200m) {
+                    var itemId = it.id
+                    var isnew: Boolean = true
+                    var selecteditem = 0;
 
+                    var count: Int = 0
+                    selectedMarkers.forEach {
+                        if (it == itemId) {
+                            isnew = false
+                            selecteditem = count;
+                        }
+                        count++
+                    }
+                    if (isnew) {
+                        selectedMarkers.add(it.id)
+                    } else {
+                        selectedMarkers.remove(it.id)
+                    }
+                    arrayMarkers.forEach {
+                        if (it.tag == itemId) {
+                            if(isnew){
+
+                                it.setIcon(
+                                        BitmapDescriptorFactory.defaultMarker(
+                                            BitmapDescriptorFactory.HUE_BLUE
+                                        ))
+                            }else{
+                                it.setIcon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_RED
+                                    ))
+                            }
+                        }
+                    }
+                }
+            }
+        })
     }
 
 
@@ -382,67 +423,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
 
             Log.d("SiamakLog", "zoom")
 
-
-//        mMap?.addMarker(
-//            MarkerOptions().position( LatLng(51.44191383305735, 7.26578731352237)).snippet("#Sample4").title("MyPos4")
-//        )?.showInfoWindow()
-
-
-//        for (item: JsonDataModelPos in  ListOfPosModel ) {
-//            mMap?.addMarker(
-//                MarkerOptions().position(LatLng(item.lat.toDouble(),item.lng.toDouble()) )
-//                    .snippet(item.user_id.toString()).title(item.upvotes.toString())
-//            )?.showInfoWindow()
-//
-//        }
-
-//
-//        val lg1 = LatLng(51.44191383305735, 7.26578731352237)
-//        val lg2 = LatLng(51.44191383305731, 7.26578731352231)
-//        val lg3 = LatLng(51.441412277826984, 7.265814135612459)
-//        val lg4 = LatLng(51.441417299301124, 7.2650631117088289)
-//        val lg5 = LatLng(51.44141951867437574, 7.265763173641176)
-//        val lg6 = LatLng(51.44287471390129, 7.268874536098451)
-//        val lg7 = LatLng(51.442607224091915, 7.268810163082094)
-//        val lg8 = LatLng(51.441151049949328, 7.268799434246034)
-//        val lg9 = LatLng(51.44392675075671, 7.27045720654894)
-//        val lg10 = LatLng(51.44462220090753, 7.27395480710436)
-//        val lg11 = LatLng(51.44432797329013, 7.27421229916979)
-//        mMap?.addMarker(
-//            MarkerOptions().position(latlang).snippet("#Sample").title("MyPos")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg1).snippet("#Sample1").title("Pos1")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg2).snippet("#Sample2").title("Pos2")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg3).snippet("#Sample3").title("Pos3")
-//        )?.showInfoWindow()
-//
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg5).snippet("#Sample4").title("MyPos4")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg6).snippet("#Sample5").title("MyPos5")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg7).snippet("#Sample6").title("MyPos6")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg8).snippet("#Sample7").title("MyPos7")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg9).snippet("#Sample7").title("MyPos7")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg10).snippet("#Sample8").title("MyPos8")
-//        )?.showInfoWindow()
-//        mMap?.addMarker(
-//            MarkerOptions().position(lg11).snippet("#Sample9").title("MyPos9")
-//        )?.showInfoWindow()
-            //  mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latlang, zoom))
 
         }
 
