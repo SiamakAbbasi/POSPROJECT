@@ -2,6 +2,7 @@ package com.SozioTech.posletics;
 
 import android.content.Context;
 import android.media.Image;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,12 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class EditPosActivity extends AppCompatActivity implements OnMapReadyCallback {
     ListView listView;
@@ -23,11 +30,15 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
     private static final String APIKEY = "AIzaSyCi-INq5LUJQ75WRIpqA3eSe-1m5qogjiI";
     private int showVotes;
     private int PosId;
-
+    Context context;
+    public String dataproperties = "";
+    @NotNull
+    public ArrayList ListOfPosModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        context=this;
         setContentView(R.layout.activity_edit_pos);
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
@@ -79,13 +90,16 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        LatLng lg = new LatLng(51.441318653573965, 7.264961193145723);
-        mMap.addMarker(new MarkerOptions().position(lg).icon(
-                BitmapDescriptorFactory.defaultMarker(
-                        BitmapDescriptorFactory.HUE_GREEN
-                )
-        ).snippet("thats veryfied but not enough").title("Unpublished"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lg, 17F));
+        ListOfPosModel = new ArrayList<JsonDataModelPos>();
+        JsonParser jsonclass = new JsonParser();
+        jsonclass.execute();
+//        LatLng lg = new LatLng(51.441318653573965, 7.264961193145723);
+//        mMap.addMarker(new MarkerOptions().position(lg).icon(
+//                BitmapDescriptorFactory.defaultMarker(
+//                        BitmapDescriptorFactory.HUE_GREEN
+//                )
+//        ).snippet("thats veryfied but not enough").title("Unpublished"));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lg, 17F));
     }
 
     class MyAdapter extends ArrayAdapter<String> {
@@ -119,6 +133,67 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
             MyTextViewNum.setText(rHashtagNum[position]);
             MyTextViewTitle.setText(rTitle[position]);
             return row;
+        }
+
+    }
+    private class JsonParser extends AsyncTask<Void, Void, JSONArray> {
+
+        @Override
+        protected JSONArray doInBackground(Void... voids) {
+            HttpHandler sh = new HttpHandler();
+            // Making a request to url and getting response
+            String url = "https://posletics.herokuapp.com/api/pos";
+            String jsonStr = sh.makeServiceCall(url);
+            dataproperties = jsonStr;
+            if (jsonStr != null) {
+                try {
+                    // Getting JSON Array node
+                    JSONArray jsonArray = new JSONArray(dataproperties);
+                    return jsonArray;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(JSONArray result) {
+            super.onPostExecute(result);
+            Integer itemcount = result.length();
+            JSONArray hashtagArr;
+            Double lat = 12.192839;
+            Double lng = 12.123123;
+            for (int i = 0; i < itemcount; i++) {
+
+                JsonDataModelPos jsonDataModelPos = new JsonDataModelPos();
+                try {
+                    JSONObject jsonObject = (JSONObject) result.get(i);
+                    jsonDataModelPos.id = (Integer) jsonObject.get("id");
+                    if (  jsonDataModelPos.id.equals(PosId)  ){
+
+                        jsonDataModelPos.user_id = (Integer) jsonObject.get("user_id");
+                        jsonDataModelPos.upvotes = (Integer) jsonObject.get("upvotes");
+                        jsonDataModelPos.lat = (String) jsonObject.get("lat");
+                        jsonDataModelPos.lng = (String) jsonObject.get("lng");
+                        jsonDataModelPos.hashtags = (JSONArray) jsonObject.get("hashtags");
+                        lat = Double.parseDouble(jsonDataModelPos.lat);
+                        lng = Double.parseDouble(jsonDataModelPos.lng);
+                        if (jsonDataModelPos.hashtags != null && jsonDataModelPos.hashtags.length() > 0) {
+                            //name = (jsonDataModelPos.hashtags.get(0) as JSONObject).get("name") as String
+                        }
+                        mMap.addMarker(
+                                new MarkerOptions().position(new LatLng(lat, lng))
+
+                        );
+                    }
+
+                    ListOfPosModel.add(jsonDataModelPos);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 16F));
         }
     }
 }

@@ -63,6 +63,7 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback, Goog
         JsonParser jsonclass = new JsonParser();
         jsonclass.execute();
         mMap.setOnMarkerClickListener(this);
+
 //        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 //            @Override
 //            public void onInfoWindowClick(Marker marker) {
@@ -121,6 +122,7 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback, Goog
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+
         Intent myIntent = new Intent(getContext(), EditPosActivity.class);
         myIntent.putExtra(Constants.MYPOSACTIVITY,Constants.YESORNO.YES.ordinal());
         myIntent.putExtra(Constants.TAGID,(int) marker.getTag());
