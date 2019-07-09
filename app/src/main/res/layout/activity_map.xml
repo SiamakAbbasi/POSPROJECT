@@ -28,38 +28,43 @@
                   android:name="com.google.android.gms.maps.SupportMapFragment"
         />
 
-        <RelativeLayout android:layout_width="55dp" android:layout_height="100dp"
+        <RelativeLayout android:layout_width="55dp" android:layout_height="180dp"
                         android:layout_marginLeft="10dp"
                         android:layout_marginRight="10dp"
                         android:elevation="10dp"
-                        android:background="@color/colorWhite"
                         android:layout_alignParentBottom="true"
                         android:layout_alignParentRight="true"
                         android:layout_marginTop="10dp"
                         android:layout_marginBottom="100dp">
-
-
-
-
-            <Button
-                    android:id="@+id/btnUsername"
-                    android:text="@string/btnGoText"
+            <!--<android.support.design.widget.FloatingActionButton-->
+                    <!--android:id="@+id/fab"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_gravity="end|bottom"-->
+                    <!--android:src="@drawable/ic_my_icon"-->
+                    <!--android:layout_margin="16dp" />-->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnGo"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
+                    app:fabCustomSize="50dp"
                     android:layout_marginRight="5dp"
                     android:layout_centerHorizontal="true"
-                    android:background="@color/colorButton"
-                    android:textColor="@color/colorWhite"
+                    android:backgroundTint="@color/colorButton"
                     android:onClick="onButtonClick"
-                    android:textSize="30dp"
+                    android:src="@drawable/ic_go_white"
             />
-            <ImageButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/deviceLocation"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="40dp"
+                    app:fabCustomSize="40dp"
+                    android:layout_height="40dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginRight="5dp"
+                    android:src="@drawable/ic_gps"
+                    android:backgroundTint="@color/colorButton"
+                    android:layout_below="@id/btnGo"/>
 
-                    android:background="@drawable/ic_my_location_"
-                    android:layout_below="@id/btnUsername"/>
         </RelativeLayout>
     </RelativeLayout>
 <LinearLayout android:layout_width="match_parent" android:orientation="vertical"
@@ -73,15 +78,17 @@
             android:theme="@style/ThemeOverlay.AppCompat.Dark" >
 
         <ImageView android:layout_width="15dp" android:layout_height="15dp"
-                   android:id="@+id/ic_magnify" android:src="@drawable/ic_search_black_24dp"
+                   android:id="@+id/ic_magnify" android:src="@drawable/ic_search_white"
                    android:layout_centerVertical="true" android:layout_marginLeft="10dp"
         />
-        <EditText android:layout_width="match_parent" android:layout_height="match_parent"
-                  android:layout_toRightOf="@id/ic_magnify"
+        <AutoCompleteTextView
+                android:layout_width="match_parent" android:layout_height="match_parent"
+                  android:layout_toRightOf="@id/txtSearch"
                   android:layout_centerVertical="true"
-                  android:textSize="15sp" android:textColor="@color/colorDarkGray"
+                  android:textSize="15sp" android:textColor="@color/colorWhite"
                   android:id="@+id/txtSearch"
-                  android:hint="Searching for Pos"
+                  android:hint="Searching for Pos "
+                android:popupBackground="#FFF"
         />
     </androidx.appcompat.widget.Toolbar>
 

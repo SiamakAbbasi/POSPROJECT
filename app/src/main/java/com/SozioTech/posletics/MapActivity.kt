@@ -2,6 +2,7 @@ package com.SozioTech.posletics
 
 import android.Manifest
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -10,13 +11,10 @@ import android.location.LocationManager
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.util.JsonReader
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.widget.ImageButton
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
@@ -29,22 +27,19 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.ArrayList
-import java.util.HashMap
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener,
     GoogleMap.OnMarkerClickListener {
@@ -63,9 +58,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
     private val ERROR_DIALOG_REQUEST = 9001
     private val TAG = "MainActivity"
     private var locationManager: LocationManager? = null
-    internal lateinit var dataproperties: String;
+    internal lateinit var dataproperties: String
     internal lateinit var ListOfPosModel: ArrayList<JsonDataModelPos>
-
+    private lateinit var context: Context;
+    val arrayMarkersInfo = ArrayList<String>()
+    val arrayMarkers = ArrayList<Marker>()
+    lateinit var txtSearchControl: AutoCompleteTextView
     fun onButtonClick(v: View) {
         val myIntent = Intent(baseContext, MainActivity::class.java)
         startActivity(myIntent)
@@ -92,7 +90,39 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+        context = this
+        this.txtSearchControl = findViewById(R.id.txtSearch)
+        txtSearchControl.setOnItemClickListener(AdapterView.OnItemClickListener { adapterView, view, i, l ->
+            val selectedItem = adapterView.getItemAtPosition(i).toString()
 
+
+            var itemcount: Int = ListOfPosModel?.size!!
+            var lat: Double = 12.192839
+            var lng: Double = 12.123123
+            var jsonArray = JSONArray()
+            ListOfPosModel.forEach {
+
+                if (it.hashtags != null && it.hashtags.length() > 0) {
+                    val hashtagcount: Int = it.hashtags?.length()!!
+                    for (i in 0 until (hashtagcount)) {
+                        var jsonObjectHashtag: JSONObject = it.hashtags.get(i) as JSONObject
+                        var name: String = jsonObjectHashtag.get("name") as String
+                        var iditem = 0;
+                        if (name.trim().toUpperCase().equals(selectedItem.trim().toUpperCase())) {
+                            iditem = it.id
+                            lat = it.lat.toDouble()
+                            lng = it.lng.toDouble()
+                            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 18F))
+                            arrayMarkers.forEach {
+                                if (it.tag ==iditem){
+                                    it.showInfoWindow()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
         toolbar = findViewById(R.id.toolbar)
 //        setSupportActionBar(toolbar);
         toolbar?.title = "Posletic"
@@ -108,7 +138,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         val navigationView: NavigationView = findViewById(R.id.navigationView)
         navigationView.setNavigationItemSelectedListener(this)
         initilizeMap()
-        val imgDeviceLocation: ImageButton = findViewById(R.id.deviceLocation)
+        val imgDeviceLocation: FloatingActionButton = findViewById(R.id.deviceLocation)
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
         imgDeviceLocation?.setOnClickListener {
             // Create persistent LocationManager reference
@@ -201,10 +231,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
             return
         }
         mMap?.isMyLocationEnabled = true
-        moveCamera(lg, 16F)
         Log.d("SiamakLOg:", "onMapReady")
 
-        mMap?.setOnMarkerClickListener( this)
+        mMap?.setOnMarkerClickListener(this)
 
     }
 
@@ -266,9 +295,92 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
     }
 
 
-    private fun moveCamera(latlang: LatLng, zoom: Float) {
+    private inner class JsonParser : AsyncTask<Void, Void, JSONArray>() {
+        override fun onPostExecute(result: JSONArray?) {
+            super.onPostExecute(result)
+            var itemcount: Int = result?.length()!!
+            var lat: Double = 12.192839
+            var lng: Double = 12.123123
+            var jsonArray = JSONArray()
 
-        Log.d("SiamakLog", "zoom")
+            for (i in 0 until (itemcount)) {
+                var jsonDataModelPos = JsonDataModelPos()
+                var jsonObject: JSONObject = result.get(i) as JSONObject
+                jsonDataModelPos.id = jsonObject.get("id") as Int
+                jsonDataModelPos.user_id = jsonObject.get("user_id") as Int
+                jsonDataModelPos.upvotes = jsonObject.get("upvotes") as Int
+                jsonDataModelPos.lat = jsonObject.get("lat") as String
+                jsonDataModelPos.lng = jsonObject.get("lng") as String
+                jsonDataModelPos.hashtags = jsonObject.get("hashtags") as JSONArray
+                lat = jsonDataModelPos.lat.toDouble()
+                lng = jsonDataModelPos.lng.toDouble()
+                var title: String = "PosLetic";
+                if (jsonDataModelPos.hashtags != null && jsonDataModelPos.hashtags.length() > 0) {
+                    title = (jsonDataModelPos.hashtags.get(0) as JSONObject).get("name") as String
+                    val hashtagcount: Int = jsonDataModelPos.hashtags?.length()!!
+                    for (i in 0 until (hashtagcount)) {
+                        var jsonObjectHashtag: JSONObject = jsonDataModelPos.hashtags.get(i) as JSONObject
+                        var name: String = jsonObjectHashtag.get("name") as String
+                        arrayMarkersInfo.add(name)
+                    }
+                }
+                var findMarker: Marker;
+                findMarker = mMap?.addMarker(
+                    MarkerOptions().position(LatLng(lat, lng))
+                        .title(title)
+                )!!
+                findMarker?.tag = jsonDataModelPos.id
+                arrayMarkers.add(findMarker)
+                ListOfPosModel.add(jsonDataModelPos)
+            }
+
+            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 15F))
+            if (arrayMarkersInfo != null && arrayMarkersInfo.size > 0) {
+                ArrayAdapter<String>(
+                    context,
+                    android.R.layout.simple_list_item_1,
+                    arrayMarkersInfo
+                ).also { adapter -> txtSearchControl.setAdapter(adapter) }
+            }
+
+        }
+
+
+        internal var dataprop = ""
+        internal var dataModelPoslist: List<JsonDataModelPos>? = null
+
+        fun FetchDataPos(urladdress: String): List<JsonDataModelPos>? {
+
+            return null
+        }
+
+        override fun onPreExecute() {
+            super.onPreExecute()
+        }
+
+
+        override fun doInBackground(vararg voids: Void): JSONArray? {
+            try {
+                var handler = HttpHandler();
+                var url = "https://posletics.herokuapp.com/api/pos"
+                dataprop = handler.makeServiceCall(url);
+                dataproperties = dataprop;
+                var jsonArray = JSONArray(dataproperties);
+                return jsonArray
+
+            } catch (e: MalformedURLException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            } catch (e: JSONException) {
+                e.printStackTrace();
+            }
+            return null
+        }
+
+        private fun moveCamera(latlang: LatLng, zoom: Float) {
+
+            Log.d("SiamakLog", "zoom")
 
 
 //        mMap?.addMarker(
@@ -330,78 +442,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
 //        mMap?.addMarker(
 //            MarkerOptions().position(lg11).snippet("#Sample9").title("MyPos9")
 //        )?.showInfoWindow()
-        //  mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latlang, zoom))
-
-    }
-
-    private inner class JsonParser : AsyncTask<Void, Void, JSONArray>() {
-        override fun onPostExecute(result: JSONArray?) {
-            super.onPostExecute(result)
-            var itemcount: Int = result?.length()!!
-            var lat: Double = 12.192839
-            var lng: Double = 12.123123
-            var jsonArray = JSONArray()
-
-            for (i in 0 until (itemcount)) {
-                var jsonDataModelPos = JsonDataModelPos()
-                var jsonObject: JSONObject = result.get(i) as JSONObject
-                jsonDataModelPos.id = jsonObject.get("id") as Int
-                jsonDataModelPos.user_id = jsonObject.get("user_id") as Int
-                jsonDataModelPos.upvotes = jsonObject.get("upvotes") as Int
-                jsonDataModelPos.lat = jsonObject.get("lat") as String
-                jsonDataModelPos.lng = jsonObject.get("lng") as String
-                jsonDataModelPos.hashtags = jsonObject.get("hashtags") as JSONArray
-                lat = jsonDataModelPos.lat.toDouble();
-                lng = jsonDataModelPos.lng.toDouble();
-                var name: String = "PosLetic";
-                if (jsonDataModelPos.hashtags != null && jsonDataModelPos.hashtags.length() > 0) {
-                    name = (jsonDataModelPos.hashtags.get(0) as JSONObject).get("name") as String
-                }
-
-                mMap?.addMarker(
-                    MarkerOptions().position(LatLng(lat, lng))
-                        .title(name)
-                )?.tag=jsonDataModelPos.id
-                ListOfPosModel.add(jsonDataModelPos)
-//
-
-            }
-            mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 15F))
+            //  mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latlang, zoom))
 
         }
 
-
-        internal var dataprop = ""
-        internal var dataModelPoslist: List<JsonDataModelPos>? = null
-
-        fun FetchDataPos(urladdress: String): List<JsonDataModelPos>? {
-
-            return null
-        }
-
-        override fun onPreExecute() {
-            super.onPreExecute()
-        }
-
-
-        override fun doInBackground(vararg voids: Void): JSONArray? {
-            try {
-                var handler = HttpHandler();
-                var url = "https://posletics.herokuapp.com/api/pos"
-                dataprop = handler.makeServiceCall(url);
-                dataproperties = dataprop;
-                var jsonArray = JSONArray(dataproperties);
-                return jsonArray
-
-            } catch (e: MalformedURLException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            } catch (e: JSONException) {
-                e.printStackTrace();
-            }
-            return null
-        }
         // return JSON String
     }
 
