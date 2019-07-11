@@ -30,6 +30,7 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
     private static final String APIKEY = "AIzaSyCi-INq5LUJQ75WRIpqA3eSe-1m5qogjiI";
     private int showVotes;
     private int PosId;
+    private int userId;
     Context context;
     public String dataproperties = "";
     @NotNull
@@ -46,6 +47,7 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
         }
         showVotes = getIntent().getExtras().getInt(Constants.MYPOSACTIVITY);
         PosId=getIntent().getExtras().getInt(Constants.TAGID);
+        PosId=getIntent().getExtras().getInt(Constants.USERID);
         EditText editTextHashtag = (EditText) findViewById(R.id.txtHashtag);
         Button buttonAddHashtag = (Button) findViewById(R.id.btnAddHashtag);
 
@@ -53,16 +55,14 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
         ListView lstHashtags = (ListView) findViewById(R.id.HashtagListView);
 
 
-        if (showVotes == Constants.YESORNO.YES.ordinal()) {//if is not my pos can't create hashtag
-            editTextHashtag.setVisibility(View.VISIBLE);
-            buttonAddHashtag.setVisibility(View.VISIBLE);
-
-        } else {
-            editTextHashtag.setVisibility(View.INVISIBLE);
-            buttonAddHashtag.setVisibility(View.INVISIBLE);
-
-
-        }
+//        if (showVotes == Constants.YESORNO.YES.ordinal()) {//if is not my pos can't create hashtag
+//            editTextHashtag.setVisibility(View.VISIBLE);
+//            buttonAddHashtag.setVisibility(View.VISIBLE);
+//
+//        } else {
+//            editTextHashtag.setVisibility(View.INVISIBLE);
+//            buttonAddHashtag.setVisibility(View.INVISIBLE);
+//        }
         mMapView = (MapView) findViewById(R.id.mapMyPosShow);
         if (mMapView != null) {
             mMapView.onCreate(mapViewBundle);
@@ -123,13 +123,13 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
             ImageView imgPlus = (ImageView) row.findViewById(R.id.row_img_plus);
             ImageView imgMinus = (ImageView) row.findViewById(R.id.row_img_minus);
             if (showVotes == Constants.YESORNO.YES.ordinal()) {//if is not my pos can't create hashtag
-                imgPlus.setVisibility(View.INVISIBLE);
-                imgMinus.setVisibility(View.INVISIBLE);
-            } else {
                 imgPlus.setVisibility(View.VISIBLE);
                 imgMinus.setVisibility(View.VISIBLE);
+            } else {
+                imgPlus.setVisibility(View.INVISIBLE);
+                imgMinus.setVisibility(View.INVISIBLE);
             }
-            //
+
             MyTextViewNum.setText(rHashtagNum[position]);
             MyTextViewTitle.setText(rTitle[position]);
             return row;

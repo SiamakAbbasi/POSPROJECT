@@ -5,46 +5,50 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+
         tools:context=".EditPosActivity">
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/Title"
-              android:textSize="30sp" android:textColor="@color/colorDarkGray" android:text="SelectedPos: AwsomePos"
-              android:layout_alignParentTop="true"
-              android:layout_margin="10dp"
-    />
-    <ListView android:id="@+id/HashtagListView" android:layout_marginTop="10dp" android:layout_below="@id/Title"
-              android:layout_width="match_parent" android:layout_height="wrap_content">
+    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                  android:layout_marginBottom="10dp" android:padding="10dp" android:orientation="horizontal" android:id="@+id/layoutAddHashtag">
+        <!--<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/Title"-->
+        <!--android:textSize="10sp" android:textColor="@color/colorDarkGray" android:text="EditHashtag"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_margin="10dp"-->
+        <!--/>-->
+        <EditText
+                android:id="@+id/txtHashtag"
+                android:hint="input name of hashtag"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="10dp"
+                android:layout_width="250dp"
+                android:layout_height="50dp"
+                android:ems="10"
+                android:gravity="center"
 
-    </ListView>
-    <EditText
-            android:id="@+id/txtHashtag"
-            android:hint="@string/HashtagName"
-            android:layout_marginTop="30dp"
-            android:layout_width="250dp"
-            android:layout_height="50dp"
-            android:ems="10"
-            android:gravity="center"
-            android:layout_below="@id/HashtagListView"
-            android:drawableLeft="@drawable/ic_label_hashtag"
-            >
-    </EditText>
-    <Button
-            android:id="@+id/btnAddHashtag"
-            android:text="@string/AddHashtag"
-            android:layout_marginTop="30dp"
-            android:layout_below="@id/HashtagListView"
-            android:layout_width="70dp"
-            android:layout_height="50dp"
-            android:layout_centerHorizontal="true"
-            android:layout_toRightOf="@+id/txtHashtag"
-            android:background="@color/colorButton"
-            android:textColor="@color/colorWhite"  />
-            <!--android:onClick=""-->
+                android:drawableLeft="@drawable/ic_label_hashtag"
+        />
+        <Button
+                android:id="@+id/btnAddHashtag"
+                android:text="@string/AddHashtag"
+                android:layout_marginTop="30dp"
+                android:layout_width="70dp"
+                android:layout_height="50dp"
+                android:background="@color/colorButton"
+                android:textColor="@color/colorWhite"/>
+    </LinearLayout>
 
-    <com.google.android.gms.maps.MapView android:layout_width="match_parent"
-                                         android:layout_height="250dp"
-                                         android:id="@+id/mapMyPosShow" android:layout_alignParentBottom="true"
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                  android:layout_below="@id/layoutAddHashtag"
+                  android:layout_marginTop="20dp" android:orientation="vertical">
+        <ListView android:id="@+id/HashtagListView" android:layout_marginTop="10dp" android:layout_marginBottom="10dp"
+                  android:layout_width="match_parent" android:layout_height="wrap_content">
+
+        </ListView>
 
 
-    />
+        <!--android:onClick=""-->
 
+        <com.google.android.gms.maps.MapView android:layout_width="match_parent"
+                                             android:layout_height="250dp"
+                                             android:id="@+id/mapMyPosShow" android:layout_alignParentBottom="true"/>
+    </LinearLayout>
 </RelativeLayout>

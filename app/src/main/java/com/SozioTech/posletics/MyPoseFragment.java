@@ -31,9 +31,12 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.fragment_mypos, container, false);
+
+        String strUserId=  this.getArguments().getString(Constants.USERID);
+        userId= Integer.parseInt(strUserId);
         return mView;
     }
-
+   public int userId=0;
     private GoogleMap mMap;
     MapView mMapView;
     View mView;
@@ -45,6 +48,7 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mMapView = (MapView) mView.findViewById(R.id.mapMyPos);
+
         if (mMapView != null) {
             mMapView.onCreate(null);
             mMapView.onResume();
@@ -126,6 +130,7 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback, Goog
         Intent myIntent = new Intent(getContext(), EditPosActivity.class);
         myIntent.putExtra(Constants.MYPOSACTIVITY,Constants.YESORNO.YES.ordinal());
         myIntent.putExtra(Constants.TAGID,(int) marker.getTag());
+        myIntent.putExtra(Constants.USERID, userId);
         startActivity(myIntent);
         return false;
     }
@@ -168,7 +173,7 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback, Goog
                     jsonDataModelPos.lat = (String) jsonObject.get("lat");
                     jsonDataModelPos.lng = (String) jsonObject.get("lng");
                     jsonDataModelPos.hashtags = (JSONArray) jsonObject.get("hashtags");
-                    if (jsonDataModelPos.user_id == 4) {
+                    if (jsonDataModelPos.user_id == userId) {
                         String name = "PosLetic";
                         if (jsonDataModelPos.hashtags != null && jsonDataModelPos.hashtags.length() > 0) {
                             name = (String) ((JSONObject) jsonDataModelPos.hashtags.get(0)).get("name");

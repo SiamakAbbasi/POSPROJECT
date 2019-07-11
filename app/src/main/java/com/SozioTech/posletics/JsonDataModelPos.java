@@ -2,6 +2,8 @@ package com.SozioTech.posletics;
 
 import org.json.JSONArray;
 
+import java.util.ArrayList;
+
 public class JsonDataModelPos {
     public Integer id;
     public String name;
@@ -11,3 +13,4 @@ public class JsonDataModelPos {
     public Integer user_id;
     public JSONArray hashtags;
 }
+

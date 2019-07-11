@@ -33,7 +33,9 @@ import com.google.android.material.navigation.NavigationView
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.DataOutputStream
 import java.io.IOException
+import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
@@ -41,14 +43,6 @@ import java.util.ArrayList
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener,
     GoogleMap.OnMarkerClickListener {
-    override fun onMarkerClick(marker: Marker?): Boolean {
-        val myIntent = Intent(baseContext, EditPosActivity::class.java)
-        myIntent.putExtra(Constants.MYPOSACTIVITY, Constants.YESORNO.NO.ordinal)
-        myIntent.putExtra(Constants.TAGID, marker?.getTag() as Int)
-        startActivity(myIntent)//To change body of created functions use File | Settings | File Templates.
-        return false
-    }
-
 
     private lateinit var drawer: DrawerLayout
     private var toolbar: Toolbar? = null
@@ -60,21 +54,50 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
     private lateinit var context: Context;
     val arrayMarkersInfo = ArrayList<String>()
     val arrayMarkers = ArrayList<Marker>()
-    val selectedMarkers = ArrayList<Int>()
+    var selectedMarkers = ArrayList<Int>()
+    var userId: Int = 0;
     lateinit var txtSearchControl: AutoCompleteTextView
-    fun onButtonClick(v: View) {
-        val myIntent = Intent(baseContext, MainActivity::class.java)
-        startActivity(myIntent)
+
+    fun onButtonClick(v: View) {//GO button
+
+        var postData = JSONObject()
+        try {
+            postData.put("user_id", userId)
+            postData.put("route", selectedMarkers)
+            SendDeviceDetails().execute("https://posletics.herokuapp.com/api/route", postData.toString())
+            for (marker in arrayMarkers) {
+                marker.setIcon(
+                    BitmapDescriptorFactory.defaultMarker(
+                        BitmapDescriptorFactory.HUE_RED
+                    )
+                )
+            }
+        } catch (e: JSONException) {
+            e.printStackTrace();
+        }
+    }
+
+    override fun onMarkerClick(marker: Marker?): Boolean {
+        val myIntent = Intent(baseContext, EditPosActivity::class.java)
+        myIntent.putExtra(Constants.MYPOSACTIVITY, Constants.YESORNO.NO.ordinal)
+        myIntent.putExtra(Constants.TAGID, marker?.getTag() as Int)
+        myIntent.putExtra(Constants.USERID, userId)
+        startActivity(myIntent)//To change body of created functions use File | Settings | File Templates.
+        return false
     }
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
 
         when (menuItem.itemId) {
             R.id.nav_mypos -> {
+                var myPosFragmet = MyPoseFragment()
+                var bundle = Bundle()
+                bundle.putString(Constants.USERID, userId.toString())
+                myPosFragmet.arguments = bundle
                 supportFragmentManager.beginTransaction().replace(
                     R.id.fragment_container,
-                    MyPoseFragment()
-                ).commit()
+                    myPosFragmet
+                    ).commit()
             }
             R.id.nav_overview -> {
                 val myIntent = Intent(baseContext, MapActivity::class.java)
@@ -88,6 +111,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+        userId = intent.extras!!.getInt(Constants.USERID)
         context = this
         this.txtSearchControl = findViewById(R.id.txtSearch)
         txtSearchControl.setOnItemClickListener(AdapterView.OnItemClickListener { adapterView, view, i, l ->
@@ -259,17 +283,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
                     }
                     arrayMarkers.forEach {
                         if (it.tag == itemId) {
-                            if(isnew){
+                            if (isnew) {
 
                                 it.setIcon(
-                                        BitmapDescriptorFactory.defaultMarker(
-                                            BitmapDescriptorFactory.HUE_BLUE
-                                        ))
-                            }else{
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_BLUE
+                                    )
+                                )
+                            } else {
                                 it.setIcon(
                                     BitmapDescriptorFactory.defaultMarker(
                                         BitmapDescriptorFactory.HUE_RED
-                                    ))
+                                    )
+                                )
                             }
                         }
                     }
@@ -278,13 +304,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         })
     }
 
-
     private val FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
     private val COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION
     private val LOCATION_PERMISSION_REQUEST_CODE = 1234
     private var mLocationPermissionGranted: Boolean? = false
     private var mMap: GoogleMap? = null
-
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         Log.d("SiamakLOg:", "onRequestPermissionsResult")
@@ -427,6 +451,56 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         }
 
         // return JSON String
+    }
+
+
+    private inner class SendDeviceDetails : AsyncTask<String, Void, String>() {
+
+        override fun doInBackground(vararg params: String): String {
+
+            var data = ""
+
+            var httpURLConnection: HttpURLConnection? = null
+            try {
+
+                httpURLConnection = URL(params[0]).openConnection() as HttpURLConnection
+                httpURLConnection.requestMethod = "POST"
+
+                httpURLConnection.doOutput = true
+
+                val wr = DataOutputStream(httpURLConnection.outputStream)
+                wr.writeBytes("PostData=" + params[1])
+                wr.flush()
+                wr.close()
+
+                val `in` = httpURLConnection.inputStream
+                val inputStreamReader = InputStreamReader(`in`)
+
+                var inputStreamData = inputStreamReader.read()
+                while (inputStreamData != -1) {
+                    val current = inputStreamData.toChar()
+                    inputStreamData = inputStreamReader.read()
+                    data += current
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                httpURLConnection?.disconnect()
+            }
+
+            return data
+        }
+
+        override fun onPostExecute(result: String) {
+            super.onPostExecute(result)
+            Toast.makeText(applicationContext, "the data are sent.", Toast.LENGTH_SHORT).show()
+            selectedMarkers = ArrayList<Int>()
+
+            Log.e(
+                "TAG",
+                result
+            ) // this is expecting a response code to be sent from your server upon receiving the POST data
+        }
     }
 
 }
