@@ -196,34 +196,89 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
             if (showVotes == Constants.YESORNO.YES.ordinal()) {//if is not my pos can't create hashtag
                 imgPlus.setVisibility(View.VISIBLE);
                 imgMinus.setVisibility(View.VISIBLE);
-//                imgPlus.setOnClickListener( new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        JSONObject objHashtag = new JSONObject();
-//                        try {
-//                            objHashtag.put("id", mHahshtags.get(position).id);
-//                            objHashtag.put("name", mHahshtags.get(position).name);
-//                            objHashtag.put("upvotes", mHahshtags.get(position).upvotes - 1);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                        new SendDeviceDetails().execute("https://posletics.herokuapp.com/api/hashtags/" + mHahshtags.get(position).id + "/", objHashtag.toString());
-//                    }
-//                });
-//                imgPlus.setOnClickListener( new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        JSONObject objHashtag = new JSONObject();
-//                        try {
-//                            objHashtag.put("id", mHahshtags.get(position).id);
-//                            objHashtag.put("name", mHahshtags.get(position).name);
-//                            objHashtag.put("upvotes", mHahshtags.get(position).upvotes + 1);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                        new SendDeviceDetails().execute("https://posletics.herokuapp.com/api/hashtags/" + mHahshtags.get(position).id + "/", objHashtag.toString());
-//                    }
-//                });
+                imgPlus.setOnClickListener( new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        JSONObject objHashtag = new JSONObject();
+                        JsonDataModelHashtag currentHashtag=new JsonDataModelHashtag();
+                        try {
+                            int vote=0;
+                            int hashid=Integer.parseInt(rIds[position]);
+                            for (JsonDataModelHashtag item :hashtagModelList){
+                                if (item.id==hashid){
+                                    currentHashtag=item;
+                                    item.upvotes=item.upvotes+1;
+                                    vote=item.upvotes;
+                                }
+                            }
+                            for (int i = 0; i < selectedPos.hashtags.length(); i++) {
+
+                                try {
+
+                                    JSONObject jsonObject = ((JSONObject) selectedPos.hashtags.get(i));
+                                    int id = (Integer) jsonObject.get("id");
+                                    if (hashid==id  ){
+                                         jsonObject.put("upvotes",vote);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            objHashtag.put("id", currentHashtag.id);
+                            objHashtag.put("name", currentHashtag.name);
+                            objHashtag.put("upvotes", vote);
+                            String votestr=Integer.toString( vote );
+
+                        View parentrow=(View) view.getParent();
+                               ((TextView)((LinearLayout)parentrow).getChildAt(2)).setText(votestr);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        new SendDeviceDetails().execute("https://posletics.herokuapp.com/api/hashtags/" + currentHashtag.id + "/", objHashtag.toString());
+                    }
+                });
+                imgMinus.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        JSONObject objHashtag = new JSONObject();
+                        JsonDataModelHashtag currentHashtag=new JsonDataModelHashtag();
+                        try {
+                            int vote=0;
+                            int hashid=Integer.parseInt(rIds[position]);
+                            for (JsonDataModelHashtag item :hashtagModelList){
+                                if (item.id==hashid){
+                                    currentHashtag=item;
+                                    item.upvotes=item.upvotes-1;
+                                    vote=item.upvotes;
+                                }
+                            }
+                            for (int i = 0; i < selectedPos.hashtags.length(); i++) {
+
+                                try {
+
+                                    JSONObject jsonObject = ((JSONObject) selectedPos.hashtags.get(i));
+                                    int id = (Integer) jsonObject.get("id");
+                                    if (hashid==id  ){
+                                        jsonObject.put("upvotes",vote);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            objHashtag.put("id", currentHashtag.id);
+                            objHashtag.put("name", currentHashtag.name);
+                            objHashtag.put("upvotes", vote);
+                            String votestr=Integer.toString( vote );
+
+                            View parentrow=(View) view.getParent();
+                            ((TextView)((LinearLayout)parentrow).getChildAt(2)).setText(votestr);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        new SendDeviceDetails().execute("https://posletics.herokuapp.com/api/hashtags/" + currentHashtag.id + "/", objHashtag.toString());
+                    }
+                });
 
             } else {
                 imgPlus.setVisibility(View.INVISIBLE);
