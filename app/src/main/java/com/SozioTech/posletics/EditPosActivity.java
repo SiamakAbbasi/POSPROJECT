@@ -3,9 +3,11 @@ package com.SozioTech.posletics;
 import android.content.Context;
 import android.media.Image;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,39 +23,48 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class EditPosActivity extends AppCompatActivity implements OnMapReadyCallback {
     ListView listView;
-    String mTitle[] = {"First_Hashtag", "Second_Hashtag", "Third_Hashtag"};
-    String mHashtagNum[] = {"5", "9", "12"};
+    //    String mTitle[] = {"First_Hashtag", "Second_Hashtag", "Third_Hashtag"};
+//    String mHashtagNum[] = {"5", "9", "12"};
+    JsonDataModelHashtag hashtagModel = new JsonDataModelHashtag();
+    ArrayList<JsonDataModelHashtag> hashtagModelList = new ArrayList<JsonDataModelHashtag>();
+    ArrayList<String> votes = new ArrayList<String>();
+    ArrayList<String> names = new ArrayList<String>();
     private static final String APIKEY = "AIzaSyCi-INq5LUJQ75WRIpqA3eSe-1m5qogjiI";
     private int showVotes;
     private int PosId;
     private int userId;
+    private JsonDataModelPos selectedPos = new JsonDataModelPos();
     Context context;
     public String dataproperties = "";
     @NotNull
     public ArrayList ListOfPosModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        context=this;
+        context = this;
         setContentView(R.layout.activity_edit_pos);
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(APIKEY);
         }
         showVotes = getIntent().getExtras().getInt(Constants.MYPOSACTIVITY);
-        PosId=getIntent().getExtras().getInt(Constants.TAGID);
-        PosId=getIntent().getExtras().getInt(Constants.USERID);
-        EditText editTextHashtag = (EditText) findViewById(R.id.txtHashtag);
-        Button buttonAddHashtag = (Button) findViewById(R.id.btnAddHashtag);
-
+        PosId = getIntent().getExtras().getInt(Constants.TAGID);
+        userId = getIntent().getExtras().getInt(Constants.USERID);
 
         ListView lstHashtags = (ListView) findViewById(R.id.HashtagListView);
-
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
 //        if (showVotes == Constants.YESORNO.YES.ordinal()) {//if is not my pos can't create hashtag
 //            editTextHashtag.setVisibility(View.VISIBLE);
@@ -69,17 +80,14 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
             mMapView.onResume();
             mMapView.getMapAsync(this);
         }
+        ListOfPosModel = new ArrayList<JsonDataModelPos>();
 
-        listView = findViewById(R.id.HashtagListView);
-        //
-        MyAdapter adapter = new MyAdapter(this, mTitle, mHashtagNum);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-            }
-        });
+//        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//
+//            }
+//        });
     }
 
     private GoogleMap mMap;
@@ -90,9 +98,9 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        ListOfPosModel = new ArrayList<JsonDataModelPos>();
         JsonParser jsonclass = new JsonParser();
         jsonclass.execute();
+
 //        LatLng lg = new LatLng(51.441318653573965, 7.264961193145723);
 //        mMap.addMarker(new MarkerOptions().position(lg).icon(
 //                BitmapDescriptorFactory.defaultMarker(
@@ -102,20 +110,83 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
 //        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lg, 17F));
     }
 
+    public void onBtnAddHashTag(View view) {
+        JSONObject postData = new JSONObject();
+        try {
+            EditText txtHashtagName = findViewById(R.id.txtHashtag);
+            int newId = 1;
+            if (selectedPos.hashtags != null) {
+                newId = selectedPos.hashtags.length() + 1;
+            }
+            String hashtagName = txtHashtagName.getText().toString().trim();
+            JSONObject objHashtag = new JSONObject();
+            objHashtag.put("id", newId);
+            objHashtag.put("name", hashtagName);
+            objHashtag.put("upvotes", 0);
+            selectedPos.hashtags.put(objHashtag);
+            postData.put("lat", selectedPos.lat);
+            postData.put("lng", selectedPos.lng);
+            postData.put("hashtag", selectedPos.hashtags);
+            new SendDeviceDetails().execute("https://posletics.herokuapp.com/api/pos/" + PosId + "/", postData.toString());
+            //Load List
+            LoadListView();
+
+            //
+            txtHashtagName.setText("");
+            Toast.makeText(getApplicationContext(), "Thanks!Hashtag is Added", Toast.LENGTH_SHORT).show();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void LoadListView() {
+        hashtagModelList = new ArrayList<JsonDataModelHashtag>();
+        for (int i = 0; i < selectedPos.hashtags.length(); i++) {
+
+            JsonDataModelHashtag jsonDataModelHashtag = new JsonDataModelHashtag();
+            try {
+                JSONObject jsonObject = (JSONObject) selectedPos.hashtags.get(i);
+                jsonDataModelHashtag.id = (Integer) jsonObject.get("id");
+                jsonDataModelHashtag.name = jsonObject.get("name").toString();
+                jsonDataModelHashtag.upvotes = (Integer) jsonObject.get("upvotes");
+                hashtagModelList.add(jsonDataModelHashtag);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        List<String> ids=new ArrayList<>();
+        List<String> Title=new ArrayList<>();
+        List<String> Nums=new ArrayList<>();
+
+        for (int i = 0; i < hashtagModelList.size(); i++) {
+            ids.add(hashtagModelList.get(i).id.toString());
+            Title.add(hashtagModelList.get(i).name );
+            Nums.add(hashtagModelList.get(i).upvotes.toString());
+        }
+        MyAdapter adapter = new MyAdapter(context,Title.toArray(new String[0]),
+                Nums.toArray(new String[0]),ids.toArray(new String[0]) );
+        listView.setAdapter(adapter);
+
+    }
+
     class MyAdapter extends ArrayAdapter<String> {
         Context context;
+        // ArrayList<JsonDataModelHashtag> mHahshtags; ArrayList<JsonDataModelHashtag> hashtags
         String rTitle[];
         String rHashtagNum[];
+        String rIds[];
 
-        MyAdapter(Context c, String title[], String[] hashNum) {
+        MyAdapter(Context c, String title[], String[] hashNum,String[] Ids) {
             super(c, R.layout.listview_rowitem, R.id.row_hashtag_num, title);
             this.context = c;
             this.rHashtagNum = hashNum;
             this.rTitle = title;
+            this.rIds = Ids;
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             LayoutInflater layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View row = layoutInflater.inflate(R.layout.listview_rowitem, parent, false);
             TextView MyTextViewNum = row.findViewById(R.id.row_hashtag_num);
@@ -125,17 +196,45 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
             if (showVotes == Constants.YESORNO.YES.ordinal()) {//if is not my pos can't create hashtag
                 imgPlus.setVisibility(View.VISIBLE);
                 imgMinus.setVisibility(View.VISIBLE);
+//                imgPlus.setOnClickListener( new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view) {
+//                        JSONObject objHashtag = new JSONObject();
+//                        try {
+//                            objHashtag.put("id", mHahshtags.get(position).id);
+//                            objHashtag.put("name", mHahshtags.get(position).name);
+//                            objHashtag.put("upvotes", mHahshtags.get(position).upvotes - 1);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                        new SendDeviceDetails().execute("https://posletics.herokuapp.com/api/hashtags/" + mHahshtags.get(position).id + "/", objHashtag.toString());
+//                    }
+//                });
+//                imgPlus.setOnClickListener( new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view) {
+//                        JSONObject objHashtag = new JSONObject();
+//                        try {
+//                            objHashtag.put("id", mHahshtags.get(position).id);
+//                            objHashtag.put("name", mHahshtags.get(position).name);
+//                            objHashtag.put("upvotes", mHahshtags.get(position).upvotes + 1);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                        new SendDeviceDetails().execute("https://posletics.herokuapp.com/api/hashtags/" + mHahshtags.get(position).id + "/", objHashtag.toString());
+//                    }
+//                });
+
             } else {
                 imgPlus.setVisibility(View.INVISIBLE);
                 imgMinus.setVisibility(View.INVISIBLE);
             }
-
             MyTextViewNum.setText(rHashtagNum[position]);
             MyTextViewTitle.setText(rTitle[position]);
             return row;
         }
-
     }
+
     private class JsonParser extends AsyncTask<Void, Void, JSONArray> {
 
         @Override
@@ -170,22 +269,19 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
                 try {
                     JSONObject jsonObject = (JSONObject) result.get(i);
                     jsonDataModelPos.id = (Integer) jsonObject.get("id");
-                    if (  jsonDataModelPos.id.equals(PosId)  ){
+                    if (jsonDataModelPos.id.equals(PosId)) {
 
                         jsonDataModelPos.user_id = (Integer) jsonObject.get("user_id");
                         jsonDataModelPos.upvotes = (Integer) jsonObject.get("upvotes");
                         jsonDataModelPos.lat = (String) jsonObject.get("lat");
                         jsonDataModelPos.lng = (String) jsonObject.get("lng");
                         jsonDataModelPos.hashtags = (JSONArray) jsonObject.get("hashtags");
-                        lat = Double.parseDouble(jsonDataModelPos.lat);
-                        lng = Double.parseDouble(jsonDataModelPos.lng);
+
                         if (jsonDataModelPos.hashtags != null && jsonDataModelPos.hashtags.length() > 0) {
                             //name = (jsonDataModelPos.hashtags.get(0) as JSONObject).get("name") as String
                         }
-                        mMap.addMarker(
-                                new MarkerOptions().position(new LatLng(lat, lng))
+                        selectedPos = jsonDataModelPos;
 
-                        );
                     }
 
                     ListOfPosModel.add(jsonDataModelPos);
@@ -193,7 +289,65 @@ public class EditPosActivity extends AppCompatActivity implements OnMapReadyCall
                     e.printStackTrace();
                 }
             }
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), 16F));
+            listView = findViewById(R.id.HashtagListView);
+            mMap.addMarker(
+                    new MarkerOptions().position(new LatLng(Double.parseDouble(selectedPos.lat), Double.parseDouble(selectedPos.lng)))
+            );
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(selectedPos.lat), Double.parseDouble(selectedPos.lng)), 16F));
+
+            LoadListView();
+
+        }
+    }
+
+    private class SendDeviceDetails extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            String data = "";
+
+            HttpURLConnection httpURLConnection = null;
+            try {
+
+
+                httpURLConnection = (HttpURLConnection) new URL(params[0]).openConnection();
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setRequestProperty("Content-type", "application/json;charset=utf-8");
+                httpURLConnection.setRequestProperty("Accept", "application/json");
+                httpURLConnection.setDoOutput(true);
+                httpURLConnection.setDoInput(true);
+                Log.i("JSON", params[1]);
+                DataOutputStream wr = new DataOutputStream(httpURLConnection.getOutputStream());
+                wr.writeBytes(params[1]);
+                wr.flush();
+                wr.close();
+                Log.i("STATUS", String.valueOf(httpURLConnection.getResponseCode()));
+                Log.i("MSG", httpURLConnection.getResponseMessage());
+//                InputStream in = httpURLConnection.getInputStream();
+//                InputStreamReader inputStreamReader = new InputStreamReader(in);
+
+//                int inputStreamData = inputStreamReader.read();
+//                while (inputStreamData != -1) {
+//                    char current = (char) inputStreamData;
+//                    inputStreamData = inputStreamReader.read();
+//                    data += current;
+//                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (httpURLConnection != null) {
+                    httpURLConnection.disconnect();
+                }
+            }
+
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            Log.e("TAG", result); // this is expecting a response code to be sent from your server upon receiving the POST data
         }
     }
 }

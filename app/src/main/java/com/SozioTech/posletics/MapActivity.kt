@@ -35,7 +35,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.DataOutputStream
 import java.io.IOException
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
@@ -78,11 +77,39 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
     }
 
     override fun onMarkerClick(marker: Marker?): Boolean {
-        val myIntent = Intent(baseContext, EditPosActivity::class.java)
-        myIntent.putExtra(Constants.MYPOSACTIVITY, Constants.YESORNO.NO.ordinal)
-        myIntent.putExtra(Constants.TAGID, marker?.getTag() as Int)
-        myIntent.putExtra(Constants.USERID, userId)
-        startActivity(myIntent)//To change body of created functions use File | Settings | File Templates.
+        var markerId: Int = marker?.tag as Int
+        var itemId = markerId
+        var isnew: Boolean = true
+        var selecteditem = 0;
+
+        var count: Int = 0
+        selectedMarkers.forEach {
+            if (it == itemId) {
+                isnew = false
+                selecteditem = count;
+            }
+            count++
+        }
+        if (isnew) {
+            selectedMarkers.add(markerId)
+            marker.setIcon(
+                BitmapDescriptorFactory.defaultMarker(
+                    BitmapDescriptorFactory.HUE_BLUE
+                )
+            )
+            marker?.title=Constants.MARKERTITLE
+            Toast.makeText(applicationContext, "selected", Toast.LENGTH_SHORT).show()
+
+        } else {
+            selectedMarkers.remove(markerId)
+            marker.setIcon(
+                BitmapDescriptorFactory.defaultMarker(
+                    BitmapDescriptorFactory.HUE_RED
+                )
+            )
+            Toast.makeText(applicationContext, "deselected", Toast.LENGTH_SHORT).show()
+        }
+
         return false
     }
 
@@ -97,10 +124,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
                 supportFragmentManager.beginTransaction().replace(
                     R.id.fragment_container,
                     myPosFragmet
-                    ).commit()
+                ).commit()
             }
             R.id.nav_overview -> {
                 val myIntent = Intent(baseContext, MapActivity::class.java)
+                myIntent.putExtra(Constants.USERID, userId)
                 startActivity(myIntent)
             }
         }
@@ -255,53 +283,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
         Log.d("SiamakLOg:", "onMapReady")
 
         mMap?.setOnMarkerClickListener(this)
-        mMap?.setOnMapLongClickListener(GoogleMap.OnMapLongClickListener { latLng ->
-            ListOfPosModel.forEach {
-                var lat: Double = latLng.latitude;
-                var lng: Double = latLng.longitude;
-                val results = FloatArray(1)
-                Location.distanceBetween(lat, lng, it.lat.toDouble(), it.lng.toDouble(), results)
-                val distanceInMeters = results[0]
-                val isWithin200m = distanceInMeters < 200
-                if (isWithin200m) {
-                    var itemId = it.id
-                    var isnew: Boolean = true
-                    var selecteditem = 0;
-
-                    var count: Int = 0
-                    selectedMarkers.forEach {
-                        if (it == itemId) {
-                            isnew = false
-                            selecteditem = count;
-                        }
-                        count++
-                    }
-                    if (isnew) {
-                        selectedMarkers.add(it.id)
-                    } else {
-                        selectedMarkers.remove(it.id)
-                    }
-                    arrayMarkers.forEach {
-                        if (it.tag == itemId) {
-                            if (isnew) {
-
-                                it.setIcon(
-                                    BitmapDescriptorFactory.defaultMarker(
-                                        BitmapDescriptorFactory.HUE_BLUE
-                                    )
-                                )
-                            } else {
-                                it.setIcon(
-                                    BitmapDescriptorFactory.defaultMarker(
-                                        BitmapDescriptorFactory.HUE_RED
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
+        mMap?.setOnInfoWindowClickListener(
+            GoogleMap.OnInfoWindowClickListener {
+                val myIntent = Intent(baseContext, EditPosActivity::class.java)
+                myIntent.putExtra(Constants.MYPOSACTIVITY, Constants.YESORNO.NO.ordinal)
+            myIntent.putExtra(Constants.TAGID, it?.tag as Int)
+                myIntent.putExtra(Constants.USERID, userId)
+                startActivity(myIntent)//To change body of created functions use File | Settings | File Templates.
             }
-        })
+
+        )
+//        mMap?.setOnMapLongClickListener(GoogleMap.OnMapLongClickListener { latLng ->
+//
+//        })
     }
 
     private val FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
@@ -379,9 +373,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
                 jsonDataModelPos.hashtags = jsonObject.get("hashtags") as JSONArray
                 lat = jsonDataModelPos.lat.toDouble()
                 lng = jsonDataModelPos.lng.toDouble()
-                var title: String = "PosLetic";
+                var title: String = Constants.MARKERTITLE;
                 if (jsonDataModelPos.hashtags != null && jsonDataModelPos.hashtags.length() > 0) {
-                    title = (jsonDataModelPos.hashtags.get(0) as JSONObject).get("name") as String
+                   // title = (jsonDataModelPos.hashtags.get(0) as JSONObject).get("name") as String
                     val hashtagcount: Int = jsonDataModelPos.hashtags?.length()!!
                     for (i in 0 until (hashtagcount)) {
                         var jsonObjectHashtag: JSONObject = jsonDataModelPos.hashtags.get(i) as JSONObject
@@ -472,16 +466,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, NavigationView.OnNa
                 wr.writeBytes("PostData=" + params[1])
                 wr.flush()
                 wr.close()
-
-                val `in` = httpURLConnection.inputStream
-                val inputStreamReader = InputStreamReader(`in`)
-
-                var inputStreamData = inputStreamReader.read()
-                while (inputStreamData != -1) {
-                    val current = inputStreamData.toChar()
-                    inputStreamData = inputStreamReader.read()
-                    data += current
-                }
+                Log.i("STATUS", httpURLConnection.responseCode.toString())
+                Log.i("MSG", httpURLConnection.responseMessage)
+//                val `in` = httpURLConnection.inputStream
+//                val inputStreamReader = InputStreamReader(`in`)
+//
+//                var inputStreamData = inputStreamReader.read()
+//                while (inputStreamData != -1) {
+//                    val current = inputStreamData.toChar()
+//                    inputStreamData = inputStreamReader.read()
+//                    data += current
+//                }
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {

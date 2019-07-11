@@ -14,15 +14,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.material.navigation.NavigationView;
-import com.google.android.gms.maps.SupportMapFragment;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 
@@ -68,14 +64,14 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback, Goog
         jsonclass.execute();
         mMap.setOnMarkerClickListener(this);
 
-//        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-//            @Override
-//            public void onInfoWindowClick(Marker marker) {
-//
-//            }
-//
-//
-//        });
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+
+            }
+
+
+        });
 
     }
 
@@ -181,7 +177,7 @@ public class MyPoseFragment extends Fragment implements OnMapReadyCallback, Goog
                         lat = Double.parseDouble(jsonDataModelPos.lat);
                         lng = Double.parseDouble(jsonDataModelPos.lng);
                         if (jsonDataModelPos.upvotes > 1 && jsonDataModelPos.upvotes < 4) {
-                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(name).icon(
+                            mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(Constants.MYPOSMARKERTITLE).icon(
                                     BitmapDescriptorFactory.defaultMarker(
                                             BitmapDescriptorFactory.HUE_YELLOW
                                     )
